@@ -8,6 +8,6 @@
 
 -Now testing multisig contract.
 
-CroptoPDFWeb directory: web part of the project,consists both backend and frontend
+CroptoPDFWeb directory: web part of the project,contains both backend and frontend
 
 Multisg directory: multisigwallet1 directory
