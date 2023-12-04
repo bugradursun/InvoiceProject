@@ -3,7 +3,7 @@ import BN from "bn.js";
 import multiSigWalletTruffle from "../build/contracts/MultiSigWallet.json"
 import TruffleContract from "@truffle/contract";
 import { text } from "stream/consumers";
-
+import { Log } from "ethers/providers";
 
 //@ts-ignore
 const MultiSigWallet = TruffleContract(multiSigWalletTruffle)
@@ -34,11 +34,11 @@ export async function get(web3:Web3,account:string) : Promise<GetResponse> {
     const multiSig = await MultiSigWallet.deployed()
     //contract instance : multisig
     const owners = await multiSig.getOwners()
-    const numConfirmations  = await multiSig.numConfirmationsRequired()
+    const numConfirmationsRequired  = await multiSig.numConfirmationsRequired()
     const transactionCount = await multiSig.getTransactionCount()
     const balance = await web3.eth.getBalance(multiSig.address) //contract balance
 
-    //will get 10 most recent tx
+    // get 10 most recent tx
     const count = transactionCount.toNumber(); //tx count
     const transactions: Transaction[] = []
     for(let i = 1; i <=10; i++) {
@@ -56,10 +56,18 @@ export async function get(web3:Web3,account:string) : Promise<GetResponse> {
             value:tx.value,
             data:tx.data,
             executed:tx.executed,
-            numConfirmations:tx.numConfirmations,
+            numConfirmations:tx.numConfirmations.toNumber(),
             isConfirmedByCurrentAccount:isConfirmed,
         });
     }
-
+    return {
+        address:multiSig.address,
+        balance,
+        owners,
+        numConfirmationsRequired:numConfirmationsRequired.toNumber(), //test numconfirmations required!
+        transactionCount:transactionCount.toNumber(),
+        transactions,
+    }
 
 }
+
