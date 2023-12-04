@@ -21,7 +21,7 @@ function App() {
       console.error(error)
     }
     if(data) {
-      updateAccount(data)
+      updateAccount({account: data.account, web3:data.web3})
     }
   }
 

@@ -13,7 +13,7 @@ export async function unlockAccount() { //metamask connection
     
     const accounts  = await web3.eth.getAccounts()
 
-    return {web3,acount:accounts[0] || ""}
+    return {web3,account:accounts[0] || ""}
 }
 
 export function subscribeToAccount(

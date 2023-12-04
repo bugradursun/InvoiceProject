@@ -46,10 +46,10 @@ function useAsync<Params, Response>(
       setState((state) => ({
         ...state,
         pending: false,
-        error,
+        error:error as Error,
       }));
 
-      return { error };
+      return { error : error as Error};
     }
   }
 
