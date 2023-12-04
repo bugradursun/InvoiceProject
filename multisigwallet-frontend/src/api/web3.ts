@@ -1,6 +1,6 @@
 import Web3 from "web3";
 
-export async function unlockAccount() {
+export async function unlockAccount() { //metamask connection
     //@ts-ignore
     const {ethereum} = window
 
