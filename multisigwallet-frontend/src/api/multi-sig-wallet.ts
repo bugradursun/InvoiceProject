@@ -68,6 +68,18 @@ export async function get(web3:Web3,account:string) : Promise<GetResponse> {
         transactionCount:transactionCount.toNumber(),
         transactions,
     }
-
+ 
 }
 
+export async function deposit(
+    web3:Web3,
+    account:string,
+    params: {
+        value:BN;
+    }
+) {
+    MultiSigWallet.setProvider(web3.currentProvider)
+    const multiSig = await MultiSigWallet.deployed()
+
+    await multiSig.sendTransaction({from:account,value:params.value}) //sendTransaction truffle builtin method
+}
