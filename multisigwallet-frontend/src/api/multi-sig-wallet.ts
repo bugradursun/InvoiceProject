@@ -2,8 +2,6 @@ import Web3 from "web3";
 import BN from "bn.js";
 import multiSigWalletTruffle from "../build/contracts/MultiSigWallet.json"
 import TruffleContract from "@truffle/contract";
-import { text } from "stream/consumers";
-import { Log } from "ethers/providers";
 
 //@ts-ignore
 const MultiSigWallet = TruffleContract(multiSigWalletTruffle)
@@ -151,7 +149,7 @@ export async function executeTx (
     })
 }
 
-export function subscribe(
+export function subscribe( //setup for event listener 
     web3:Web3,
     address:string,
     callback : (error : Error | null , log: Log | null) => void
@@ -179,5 +177,43 @@ interface Deposit {
 }
 
 interface SubmitTransaction {
-    event:
+    event:"SubmitTransaction";
+    returnValues: {
+        owner:string;
+        txIndex: string;
+        to: string;
+        value:string;
+        data:string;
+    }
 }
+
+interface ConfirmTransaction {
+    event:"ConfirmTransaction",
+    returnValues:{
+        owner:string;
+        txIndex:string;
+    }
+}
+
+interface RevokeConfirmation {
+    event:"RevokeConfirmation";
+    returnValues : {
+        owner:string;
+        txIndex:string
+    }
+}
+
+interface ExecuteTransaction {
+    event:"ExecuteTransaction",
+    returnValues : {
+        owner:string,
+        txIndex:string
+    }
+}
+
+type Log =
+  | Deposit
+  | SubmitTransaction
+  | ConfirmTransaction
+  | RevokeConfirmation
+  | ExecuteTransaction;
