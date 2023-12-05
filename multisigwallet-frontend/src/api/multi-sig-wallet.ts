@@ -83,3 +83,101 @@ export async function deposit(
 
     await multiSig.sendTransaction({from:account,value:params.value}) //sendTransaction truffle builtin method
 }
+
+export async function submitTx(
+    web3:Web3,
+    account:string,
+    params: {
+        to:string;
+        value:string;
+        data:string;
+    }
+) {
+    const {to,value,data} = params
+    MultiSigWallet.setProvider(web3.currentProvider)
+    const multiSig = await MultiSigWallet.deployed()
+
+    await multiSig.submitTransaction(to,value,data, {
+        from:account,
+    })
+
+}
+
+export async function confirmTx(
+    web3:Web3,
+    account:string,
+    params : {
+        txIndex: number;
+    }
+) {
+    const {txIndex} = params
+    MultiSigWallet.setProvider(web3.currentProvider)
+    const multiSig = await MultiSigWallet.deployed()
+
+    await multiSig.confirmTransaction(txIndex,{
+        from:account,
+    })
+}
+
+export async function revokeConfirmation(
+    web3:Web3,
+    account:string,
+    params : {
+        txIndex: number;
+    }
+) {
+    const {txIndex} = params
+    MultiSigWallet.setProvider(web3.currentProvider)
+    const multiSig = await MultiSigWallet.deployed()
+
+    await multiSig.revokeConfirmation(txIndex,{
+        from:account,
+    })
+}
+
+export async function executeTx (
+    web3:Web3,
+    account: string,
+    params : {
+        txIndex : number;
+    }
+) {
+    const {txIndex}  = params
+    MultiSigWallet.setProvider(web3.currentProvider)
+    const multiSig = await MultiSigWallet.deployed()
+
+    await multiSig.executeTransaction(txIndex,{
+        from:account,
+    })
+}
+
+export function subscribe(
+    web3:Web3,
+    address:string,
+    callback : (error : Error | null , log: Log | null) => void
+) {
+    const multiSig = new web3.eth.Contract(MultiSigWallet.abi,address)
+
+    const res = multiSig.events.allEvents((error:Error,log:Log) => {
+        if(error) {
+            callback(error,null)
+        } else if(log) {
+            callback(null,log)
+        }
+    });
+    return () => res.unsubscribe();
+}
+//define interfaces for events in the smart contract!
+
+interface Deposit {
+    event:"Deposit",
+    returnValues: {
+        sender:string;
+        amount: string;
+        balance : string;
+    };
+}
+
+interface SubmitTransaction {
+    event:
+}
