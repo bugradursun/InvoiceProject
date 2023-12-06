@@ -198,7 +198,9 @@ export function useMultiSigWalletContext() {
     return useContext(MultiSigWalletContext)
 }
 
-interface ProviderProps {}
+interface ProviderProps {
+    children:React.ReactNode;
+}
 //context
 export const Provider : React.FC<ProviderProps> = ({children}) => {
     const [state,dispatch] = useReducer(reducer,INITIAL_STATE)
