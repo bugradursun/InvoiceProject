@@ -84,15 +84,15 @@ type Action = Set | UpdateBalance | AddTx | UpdateTx;
 
 function reducer(state:State = INITIAL_STATE, action: Action) {
     switch(action.type) {
-        case SET : {
-            return {
+        case SET : { 
+            return { //update state property with data from action
                 ...state,
                 ...action.data,
             }
         }
         case UPDATE_BALANCE : {
             return {
-                ...state,
+                ...state, 
                 balance:action.data.balance,
             }
         }
@@ -157,3 +157,146 @@ function reducer(state:State = INITIAL_STATE, action: Action) {
     }
 }
 
+
+interface SetInputs {
+    address: string;
+    balance: string;
+    owners: string[];
+    numConfirmationsRequired: number;
+    transactionCount: number;
+    transactions: Transaction[];
+  }
+
+  interface UpdateBalanceInputs {
+    balance:string;
+  }
+
+interface AddTxInputs {
+    txIndex:string;
+    to:string;
+    value:string;
+    data:string;
+}
+
+interface UpdateTxInputs {
+    account :string
+    txIndex:string;
+    owner:string;
+    confirmed?:boolean;
+    executed?:boolean;
+}
+
+const MultiSigWalletContext = createContext({
+    state:INITIAL_STATE,
+    set:(_data:SetInputs) => {},
+    updateBalance : (_data:UpdateBalanceInputs) => {},
+    addTx:(_data:AddTxInputs) => {},
+    updateTx : (_data:UpdateTxInputs) => {},
+})
+
+export function useMultiSigWalletContext() {
+    return useContext(MultiSigWalletContext)
+}
+
+interface ProviderProps {}
+//context
+export const Provider : React.FC<ProviderProps> = ({children}) => {
+    const [state,dispatch] = useReducer(reducer,INITIAL_STATE)
+
+    function set(data: SetInputs) {
+        dispatch({
+            type:SET,
+            data,
+        })
+    }
+
+    function updateBalance(data:UpdateBalanceInputs) {
+        dispatch({
+            type:UPDATE_BALANCE,
+            data,
+
+        })
+    }
+    function addTx(data: AddTxInputs) {
+        dispatch({
+            type:ADD_TX,
+            data,
+        })
+    }
+
+    function updateTx(data:UpdateTxInputs) {
+        dispatch({
+            type:UPDATE_TX,
+            data,
+        })
+    }
+    return (
+        <MultiSigWalletContext.Provider
+        value= {useMemo(
+            () => ({
+                state,set,updateBalance,addTx,updateTx
+            }),[state]
+        )}>
+            {children}
+        </MultiSigWalletContext.Provider>
+    )
+
+}
+//update wallet status and listens event
+export function Updater() {
+    const {
+        state: {web3,account} ,
+    } =  useWeb3Context();
+    const {
+        state,set,updateBalance,addTx,updateTx
+    } = useMultiSigWalletContext()
+
+    useEffect(() => {
+        async function get(web3:Web3,account:string) {
+            try {
+                const data = await getMultiSigWallet(web3,account)
+            } catch (error) {
+                console.error(error)
+            }
+        }
+        if(web3) {
+            get(web3,account)
+        }
+    },[web3])
+
+    useEffect(() => {
+        if(web3 && state.address) {
+            return subscribe(web3,state.address,(error,log) => {
+                if(error) {
+                    console.error(error)
+                } else if (log) {
+                    switch(log.event) {
+                        case "Deposit" :
+                            updateBalance(log.returnValues)
+                            break
+                        case "SubmitTransaction":
+                            addTx(log.returnValues)
+                            break
+                        case "ConfirmTransaction":
+                            updateTx({
+                                ...log.returnValues,
+                                confirmed:false,
+                                account
+                            });
+                            break;
+                        case "ExecuteTransaction":
+                            updateTx({
+                                ...log.returnValues,
+                                executed:true,
+                                account,
+                            })
+                            break;
+                        default:
+                            console.log(log)
+                    }
+                }
+            });
+        }
+    },[web3,state.address])
+    return null;
+}
