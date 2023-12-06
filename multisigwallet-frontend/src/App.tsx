@@ -1,6 +1,5 @@
 import React from 'react';
 import { Message, Button } from 'semantic-ui-react';
-import logo from './logo.svg';
 import { useWeb3Context } from './contexts/Web3';
 import { unlockAccount } from './api/web3';
 import useAsync from "./components/useAsync";
