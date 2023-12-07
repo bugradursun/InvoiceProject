@@ -36,7 +36,6 @@ function App() {
         disabled = {pending}
         loading = {pending}
         >Connect to Metamask</Button>
-
       </header>
     </div>
   );
